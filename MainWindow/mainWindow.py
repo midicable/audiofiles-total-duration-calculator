@@ -1,7 +1,8 @@
 from PyQt5 import QtWidgets
 from PyQt5.QtGui import QFont
 from PyQt5.QtWidgets import QWidget, QMainWindow, QApplication
-from audioFilesFilter import getTotalDurationFormatted
+from AudioFilesFilter.audioFilesFilter import getTotalAudioDuration
+
 
 class MainWindow(QWidget):
     def __init__(self):
@@ -11,21 +12,37 @@ class MainWindow(QWidget):
         self.setWindowTitle('App')
 
         # Duration label
-        greet_label = QtWidgets.QLabel('Total duration: ')
-        greet_label.setFont(QFont('Helvetica', 14))
+        self.duration_label = QtWidgets.QLabel('Total duration: ')
+        self.duration_label.setFont(QFont('Helvetica', 12))
 
-        # Creating name entry box
-        name_entry = QtWidgets.QLineEdit()
-        name_entry.setObjectName('name_entry')
-        name_entry.setPlaceholderText('Path...')
+        # Files scanned label
+        self.files_scanned_label = QtWidgets.QLabel('Files scanned successfully: ')
+        self.files_scanned_label.setFont(QFont('Helvetica', 12))
+
+        # Files faied to read label
+        self.failed_to_read_label = QtWidgets.QLabel('Failed to read: ')
+        self.failed_to_read_label.setFont(QFont('Helvetica', 12))
+
+        # Creating path entry box
+        self.path_entry = QtWidgets.QLineEdit()
+        self.path_entry.setObjectName('name_entry')
+        self.path_entry.setPlaceholderText('Path...')
 
         # Creating button
-        button = QtWidgets.QPushButton('Scan', clicked = lambda: greet())
+        self.button = QtWidgets.QPushButton('Scan')
+        self.button.clicked.connect(self.showTotalDuration)
 
-        self.layout().addWidget(greet_label)
-        self.layout().addWidget(name_entry)
-        self.layout().addWidget(button)
+        self.layout().addWidget(self.duration_label)
+        self.layout().addWidget(self.files_scanned_label)
+        self.layout().addWidget(self.failed_to_read_label)
+        self.layout().addWidget(self.path_entry)
+        self.layout().addWidget(self.button)
 
-        def greet():
-            greet_label.setText(f'Total duration: {getTotalDurationFormatted(name_entry.text())}')
-            name_entry.setText('')
+    def showTotalDuration(self):
+        data = getTotalAudioDuration(self.path_entry.text())
+
+        self.duration_label.setText(f'Total duration: {data["duration"]}')
+        self.files_scanned_label.setText(f'Files scanned successfully: '
+                                        f'{data["filesRead"]}/{data["filesTotal"]}')
+        self.failed_to_read_label.setText('Failed to read:\n' + '\n'.join(data['failedToRead']))
+        self.path_entry.setText('')
